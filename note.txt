@@ -1,0 +1,141 @@
+Projet : Analyse de la ségrégation sociale et logements sociaux dans les aires urbaines (AU)
+Objectif : Répondre à la question :
+>>> Les aires urbaines (AU) ayant un taux de logements sociaux plus élevé sont-elles plus ségrégées ?
+
+----------------------------------------------------------------------------------------------------
+
+1. FICHIER : base_communes_aires_urbaines.csv
+- Contient le lien entre chaque commune (CODGEO) et son aire urbaine (AAV2020)
+- Colonnes importantes :
+    - CODGEO : code INSEE de la commune
+    - LIBGEO : nom de la commune
+    - AAV2020 : code de l’aire d’attraction des villes (AU)
+    - LIBAAV2020 : nom de l’AU
+    - CATEAAV2020 : type de commune (centre, couronne, hors AU)
+    - DEP, REG : département et région
+- Sert à regrouper les données par AU pour faire l’analyse globale
+
+----------------------------------------------------------------------------------------------------
+
+2. FICHIER : CSP_part_cadres.csv
+- Contient la part des cadres et professions intellectuelles supérieures dans chaque commune
+- Colonnes :
+    - CODGEO
+    - LIBGEO
+    - part_cadres (%)
+- Sert à mesurer la part de CSP haute (pôle social favorisé)
+
+3. FICHIER : CSP_part_employes.csv
+- Contient la part des employés dans chaque commune
+- Colonnes :
+    - CODGEO
+    - LIBGEO
+    - part_employes (%)
+- Représente une CSP intermédiaire
+
+4. FICHIER : CSP_part_ouvriers.csv
+- Contient la part des ouvriers
+- Sert à identifier les CSP populaires
+
+5. FICHIER : CSP_part_independants.csv
+- Contient la part des artisans, commerçants, chefs d’entreprise
+- Représente les indépendants
+
+>> Tous les fichiers CSP seront utilisés pour :
+    - Créer un **profil social** de chaque commune
+    - Calculer un **indice de ségrégation** par aire urbaine (écart-type, entropie, etc.)
+
+----------------------------------------------------------------------------------------------------
+
+6. FICHIER : le_taux_de_logements_sociaux.csv
+- Extrait depuis le gros fichier INSEE (8M de lignes)
+- Colonnes :
+    - CODGEO : commune
+    - total_rp : nombre total de résidences principales
+    - logements_sociaux : nombre de logements sociaux
+    - taux_logements_sociaux : rapport (social / total)
+- Sert de **variable explicative principale** dans l’analyse
+
+----------------------------------------------------------------------------------------------------
+
+
+# ================================
+# I. INTRODUCTION
+# ================================
+# Objectif : comprendre s’il existe un lien entre la concentration de logements sociaux
+# dans une aire urbaine et le niveau de ségrégation sociale.
+# Définitions :
+# - Logement social : logement à loyer modéré, réservé aux ménages modestes.
+# - Ségrégation sociale : séparation géographique des groupes sociaux dans un espace urbain.
+# - Aire urbaine (AU) : ensemble de communes organisées autour d’un pôle urbain.
+
+# ================================
+# II. DONNÉES UTILISÉES
+# ================================
+
+# 1. Données INSEE sur les communes et les aires urbaines
+#    >> base_communes_aires_urbaines.csv
+#    - contient : CODGEO, LIBGEO, AAV2020 (code AU), LIBAAV2020 (nom AU)
+
+# 2. Données sur la composition sociale (CSP)
+#    >> Part_des_cadres.csv
+#    >> Part_des_ouvriers.csv
+#    >> Part_des_employés.csv
+#    >> Part_des_artisans.csv
+#    - Toutes fusionnées via la colonne CODGEO
+
+# 3. Données sur les logements sociaux
+#    >> fichier INSEE logements (filtré)
+#    - contient : CODGEO, part de logements sociaux (OBS_VALUE)
+#    - à agréger au niveau des AAV2020
+
+# ================================
+# III. MÉTHODOLOGIE
+# ================================
+
+# 1. Fusion des données sur la base de CODGEO
+#    - Toutes les données CSP + logements sociaux fusionnées avec base_communes_aires_urbaines.csv
+
+# 2. Agrégation par aire urbaine (AAV2020)
+#    - Moyenne du taux de logements sociaux par AU
+#    - Moyenne ou écart-type des parts de CSP par AU
+
+# 3. Calcul d’un indice de ségrégation sociale
+#    Exemples :
+#    - Ecart-type des parts CSP (plus élevé = plus de ségrégation)
+#    - Indice de dissimilarité (optionnel)
+
+# 4. Analyse graphique
+#    - nuage de points (scatter plot) :
+#        x = taux logements sociaux
+#        y = indice de ségrégation
+#    - régression linéaire pour analyser la relation
+
+# 5. Régression linéaire (statsmodels)
+#    import statsmodels.api as sm
+#    X = df["taux_logements_sociaux"]
+#    y = df["indice_segregation"]
+#    X = sm.add_constant(X)
+#    model = sm.OLS(y, X).fit()
+#    print(model.summary())
+
+# ================================
+# IV. RÉSULTATS
+# ================================
+# - Corrélation observée ? (positive, négative, nulle)
+# - Les AU avec beaucoup de logements sociaux sont-elles plus ségrégées ?
+# - Analyse des valeurs extrêmes (Paris, Lyon, etc.)
+
+# ================================
+# V. LIMITES
+# ================================
+# - Ségrégation mesurée uniquement via les CSP
+# - Pas de prise en compte des revenus, déplacements, habitat privé
+# - Corrélation ≠ causalité
+
+# ================================
+# VI. CONCLUSION
+# ================================
+# - Résumé des résultats principaux
+# - Implication pour la politique du logement et l’urbanisme
+# - Propositions pour des analyses futures (intégrer les revenus, le foncier, etc.)
