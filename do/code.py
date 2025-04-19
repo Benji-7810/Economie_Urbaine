@@ -23,95 +23,105 @@ logements = pd.read_csv(os.path.join(INPUT_DIR, "logements_sociaux_epci_2021.csv
 
 print("✅ Tous les fichiers ont été chargés avec succès.")
 
-# === Création du DataFrame CSP de base ===
-csp_df = cadres[["Code", "Libellé"]].copy()
+# === Nettoyage et renommage des colonnes utiles ===
 
-csp_df["cadres"] = pd.to_numeric(
-    cadres["Part des cadres et prof. intellectuelles sup. dans le nb d’emplois au LT 2021"], errors='coerce')
+# On extrait et renomme uniquement les colonnes nécessaires pour chaque CSP
+cadres = cadres.rename(columns={
+    "Code": "CODGEO",
+    "Part des cadres et prof. intellectuelles sup. dans le nb d’emplois au LT 2021": "cadres"
+})[["CODGEO", "cadres"]]
 
-csp_df["ouvriers"] = pd.to_numeric(
-    ouvriers["Part des ouvriers dans le nb d’emplois au LT 2021"], errors='coerce')
+ouvriers = ouvriers.rename(columns={
+    "Code": "CODGEO",
+    "Part des ouvriers dans le nb d’emplois au LT 2021": "ouvriers"
+})[["CODGEO", "ouvriers"]]
 
-csp_df["employes"] = pd.to_numeric(
-    employes["Part des employés dans le nb d’emplois au LT 2021"], errors='coerce')
+employes = employes.rename(columns={
+    "Code": "CODGEO",
+    "Part des employés dans le nb d’emplois au LT 2021": "employes"
+})[["CODGEO", "employes"]]
 
-csp_df["artisans"] = pd.to_numeric(
-    artisans["Part des artisans, commerçants, chefs d’ent. dans le nb d’emplois au LT 2021"], errors='coerce')
+artisans = artisans.rename(columns={
+    "Code": "CODGEO",
+    "Part des artisans, commerçants, chefs d’ent. dans le nb d’emplois au LT 2021": "artisans"
+})[["CODGEO", "artisans"]]
+
+# Conversion des colonnes en float (au cas où certaines sont mal lues)
+for df in [cadres, ouvriers, employes, artisans]:
+    for col in df.columns[1:]:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+# === Fusion des CSP sur le code commune ===
+csp_df = cadres.merge(ouvriers, on="CODGEO", how="outer") \
+               .merge(employes, on="CODGEO", how="outer") \
+               .merge(artisans, on="CODGEO", how="outer")
+
+# === Nettoyage du fichier des communes (aires urbaines) ===
+communes_au = communes_au[["CODGEO", "AAV2020", "LIBAAV2020"]].astype(str)
+csp_df["CODGEO"] = csp_df["CODGEO"].astype(str)
 
 # === Fusion avec aires urbaines ===
-csp_df = csp_df.rename(columns={"Code": "CODGEO"})
-communes_au[["CODGEO", "AAV2020"]] = communes_au[["CODGEO", "AAV2020"]].astype(str)
-csp_au = csp_df.merge(communes_au[["CODGEO", "AAV2020"]], on="CODGEO")
+csp_df = csp_df.merge(communes_au, on="CODGEO", how="left")
 
-# Agrégation par AU
-csp_au_grouped = csp_au.groupby("AAV2020")[["cadres", "ouvriers", "employes", "artisans"]].mean().reset_index()
-csp_au_grouped["dissimilarite"] = abs(csp_au_grouped["cadres"] - csp_au_grouped["ouvriers"])
+# === Agrégation des données par aire urbaine ===
+csp_au = csp_df.groupby(["AAV2020", "LIBAAV2020"])[["cadres", "ouvriers", "employes", "artisans"]].mean().reset_index()
 
-# Fusion avec logements sociaux
+# === Calcul de l'indice de dissimilarité (cadres vs ouvriers) ===
+csp_au["dissimilarite"] = abs(csp_au["cadres"] - csp_au["ouvriers"])
+
+# === Nettoyage des données logements sociaux ===
 logements = logements.rename(columns={"GEO": "AAV2020", "nb_logements_sociaux": "logements_sociaux"})
 logements["AAV2020"] = logements["AAV2020"].astype(str)
-data = csp_au_grouped.merge(logements, on="AAV2020")
 
-# Nettoyage des données
-data_clean = data.copy()
-data_clean = data_clean.dropna(subset=["logements_sociaux", "dissimilarite"])
-data_clean = data_clean[data_clean["dissimilarite"] > 0]
+# === Fusion finale CSP + logements sociaux ===
+data = csp_au.merge(logements, on="AAV2020", how="left")
+data = data.dropna(subset=["logements_sociaux", "dissimilarite"])
 
-if data_clean.empty:
-    raise ValueError("⛔ Le DataFrame est vide après filtrage. Vérifie les données source.")
+print("📂 Données prêtes pour l’analyse.")
+print(data.head(10))  # Affiche les 10 premières lignes
 
-# Régression
-X = sm.add_constant(data_clean["logements_sociaux"])
-y = data_clean["dissimilarite"]
+
+# === Étape 1 : Top 20 AU avec le plus de logements sociaux ===
+top_20 = data.sort_values("logements_sociaux", ascending=False).head(20)
+
+plt.figure(figsize=(12, 7))
+plt.barh(top_20["LIBAAV2020"], top_20["logements_sociaux"], color='skyblue')
+plt.xlabel("Nombre de logements sociaux")
+plt.title("Top 20 des aires urbaines avec le plus de logements sociaux")
+plt.gca().invert_yaxis()
+plt.tight_layout()
+plt.savefig("graphique_1_logements_sociaux.png", dpi=300)
+plt.show()
+
+# === Étape 2 : Dissimilarité pour ces mêmes AU ===
+plt.figure(figsize=(12, 7))
+plt.barh(top_20["LIBAAV2020"], top_20["dissimilarite"], color='coral')
+plt.xlabel("Indice de dissimilarité (cadres vs ouvriers)")
+plt.title("Ségrégation socio-pro dans les AU les plus dotées en logements sociaux")
+plt.gca().invert_yaxis()
+plt.tight_layout()
+plt.savefig("graphique_2_dissimilarite.png", dpi=300)
+plt.show()
+
+# === Étape 3 : Corrélation + régression ===
+X = sm.add_constant(data["logements_sociaux"])
+y = data["dissimilarite"]
 model = sm.OLS(y, X).fit()
-print("📊 Résultats de la régression :")
+
+print("📈 Résultats de la régression linéaire :")
 print(model.summary())
 
-# === Visualisation ===
-plt.style.use('ggplot')
 plt.figure(figsize=(10, 7))
+plt.scatter(data["logements_sociaux"], data["dissimilarite"], s=50, alpha=0.6, edgecolor='k', linewidth=0.5)
+plt.plot(data["logements_sociaux"], model.predict(X), color='red', linestyle='--', linewidth=2, label="Régression linéaire")
 
-plt.scatter(
-    data_clean["logements_sociaux"],
-    data_clean["dissimilarite"],
-    s=50, alpha=0.6, edgecolor='k', linewidth=0.3,
-    label="Aires urbaines"
-)
-
-plt.plot(
-    data_clean["logements_sociaux"],
-    model.predict(X),
-    color='red', linestyle='--', linewidth=2,
-    label="Régression linéaire"
-)
-
-plt.title("Corrélation entre logements sociaux et ségrégation socio-professionnelle", fontsize=15, weight='bold')
-plt.xlabel("Nombre de logements sociaux (par aire urbaine)", fontsize=12)
+plt.title("Corrélation entre logements sociaux et ségrégation socio-professionnelle", fontsize=14, weight='bold')
+plt.xlabel("Nombre de logements sociaux par aire urbaine", fontsize=12)
 plt.ylabel("Indice de dissimilarité (cadres vs ouvriers)", fontsize=12)
-plt.xlim(0, data_clean["logements_sociaux"].quantile(0.98))
-plt.ylim(0, data_clean["dissimilarite"].max() + 5)
+plt.xlim(0, data["logements_sociaux"].quantile(0.98))
+plt.ylim(0, data["dissimilarite"].max() + 5)
 plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}"))
 plt.legend()
 plt.tight_layout()
-
-# === Ajout des labels Paris, Lyon, Marseille ===
-grandes_villes = {
-    "Paris": "75056",
-    "Lyon": "69123",
-    "Marseille": "13055"
-}
-
-for ville, code_insee in grandes_villes.items():
-    match = communes_au[communes_au["CODGEO"] == code_insee]
-    if not match.empty:
-        aav = match.iloc[0]["AAV2020"]
-        point = data_clean[data_clean["AAV2020"] == str(aav)]
-        if not point.empty:
-            x = point["logements_sociaux"].values[0]
-            y = point["dissimilarite"].values[0]
-            plt.annotate(ville, (x, y), fontsize=11, weight='bold', color='black',
-                         xytext=(5, 5), textcoords='offset points')
-
-# Sauvegarde et affichage
-plt.savefig("correlation_segregation_logements_ameliore.png", dpi=300)
+plt.savefig("graphique_3_regression.png", dpi=300)
 plt.show()
