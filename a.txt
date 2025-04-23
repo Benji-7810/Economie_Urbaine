@@ -19,3 +19,5 @@ C21_ACTOCC1564_CS2 : nombre d'artisans, commerçants, chefs d'entreprise actifs 
 C21_ACTOCC1564_CS3 : nombre de cadres, professions intellectuelles supérieures actifs occupés de 15 à 64 ans
 C21_ACTOCC1564_CS5 : nombre d'employés actifs occupés de 15 à 64 ans
 C21_ACTOCC1564_CS6 : nombre d'ouvriers actifs occupés de 15 à 64 ans
+
+a
