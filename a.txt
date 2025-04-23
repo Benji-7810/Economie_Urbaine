@@ -1,0 +1,21 @@
+Info sur les logements sociaux
+
+Code	Signification (probable ou confirmée INSEE)	Nombre
+COM	Commune — identifiant unique d'une commune	34 913
+UU	Unité urbaine — agglomération continue de plus de 2000 habitants	2 456
+BV	Bassin de vie — territoire de proximité autour des pôles de services	1 705
+EPCI	Établissement Public de Coopération Intercommunale — intercommunalités (métropoles, communautés de communes…)	1 250
+AAV	Aire d’Attraction des Villes — nouvelle notion INSEE depuis 2020	698
+ARR	Arrondissement — subdivision d’un département	333
+ZE	Zone d’emploi — zone homogène sur le plan du marché du travail	305
+DEP	Département — niveau administratif départemental	100
+ARM	Armée ? ou code spécifique INSEE (à confirmer, peut-être lié à la défense ou statistique particulière)	45
+REG	Région — région administrative française	17
+FRANCE	France entière ou ensemble national (codes globaux)	2
+
+pop :
+
+C21_ACTOCC1564_CS2 : nombre d'artisans, commerçants, chefs d'entreprise actifs occupés de 15 à 64 ans
+C21_ACTOCC1564_CS3 : nombre de cadres, professions intellectuelles supérieures actifs occupés de 15 à 64 ans
+C21_ACTOCC1564_CS5 : nombre d'employés actifs occupés de 15 à 64 ans
+C21_ACTOCC1564_CS6 : nombre d'ouvriers actifs occupés de 15 à 64 ans
