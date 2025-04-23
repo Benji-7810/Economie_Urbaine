@@ -104,6 +104,51 @@ plt.show()
 # === GRAPHIQUES CSP : par catégorie sociale ===
 print("📊 Génération des graphiques par CSP...")
 
+# === GRAPHIQUES CSP COMBINÉS : CS2+CS3 et CS5+CS6 ===
+print("📊 Génération des graphiques CSP combinées...")
+
+# Calcul des combinaisons
+population_metier_df["CS2_CS3"] = population_metier_df["CS2"] + population_metier_df["CS3"]
+population_metier_df["CS5_CS6"] = population_metier_df["CS5"] + population_metier_df["CS6"]
+
+# Moyennes par AAV
+comb_cols = ["CS2_CS3", "CS5_CS6"]
+csp_comb_moyennes = population_metier_df.groupby("AAV2020")[comb_cols].mean().reset_index()
+csp_comb_moyennes["AAV2020"] = csp_comb_moyennes["AAV2020"].astype(str).str.zfill(3)
+
+# Fusion avec le taux de logements sociaux
+df_comb = pd.merge(csp_comb_moyennes, logements_sociaux_taux_df[["AAV2020", "PCT_SOCIAUX"]], on="AAV2020", how="left")
+df_comb["PCT_SOCIAUX"] = df_comb["PCT_SOCIAUX"] * 100
+
+# Titres
+titres_comb = {
+    "CS2_CS3": "Artisans + Cadres (15-64 ans)",
+    "CS5_CS6": "Employés + Ouvriers (15-64 ans)"
+}
+
+# Génération des graphiques
+for col in comb_cols:
+    plt.figure(figsize=(10, 6))
+    plt.scatter(df_comb["PCT_SOCIAUX"], df_comb[col], alpha=0.7, edgecolors='k')
+
+    m, b = np.polyfit(df_comb["PCT_SOCIAUX"], df_comb[col], 1)
+    r = np.corrcoef(df_comb["PCT_SOCIAUX"], df_comb[col])[0, 1]
+    plt.plot(df_comb["PCT_SOCIAUX"], m * df_comb["PCT_SOCIAUX"] + b, color='red', label=f'Tendance (r = {r:.2f})')
+
+    plt.title(f"{titres_comb[col]} selon le taux de logements sociaux")
+    plt.xlabel("Taux de logements sociaux (%)")
+    plt.ylabel(titres_comb[col])
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+
+    filename = f"{col}_vs_logements_sociaux.png"
+    full_path = os.path.join(output_path, filename)
+    plt.savefig(full_path)
+    print(f"✅ Graphique sauvegardé : {full_path}")
+    plt.show()
+
+
 # Titres explicites pour chaque catégorie
 titres = {
     "CS2": "Artisans, commerçants, chefs d'entreprise (15-64 ans)",
