@@ -138,6 +138,9 @@ for col in cols:
     plt.title(f"{titres[col]} selon le taux de logements sociaux")
     plt.xlabel("Taux de logements sociaux (%)")
     plt.ylabel(titres[col])
+    
+    #plt.yticks(np.arange(0, max_val, 1000))
+
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
@@ -148,3 +151,136 @@ for col in cols:
     plt.savefig(full_path)
     print(f"✅ Graphique sauvegardé : {full_path}")
     plt.show()
+
+
+# Assure que les colonnes AAV2020 sont en chaînes de caractères
+population_metier_df["AAV2020"] = population_metier_df["AAV2020"].astype(str)
+logements_sociaux_taux_df["AAV2020"] = logements_sociaux_taux_df["AAV2020"].astype(str)
+
+top_25_aav = [
+    "9D3", "512", "256", "409", "496", "42", "269", "560", "221", "622", 
+    "508", "112", "36", "322", "303", "168", "9C3", "59", "48", "581", 
+    "634", "660", "39", "9D1", "283", "144"
+]
+
+df_top25 = population_metier_df[population_metier_df["AAV2020"].isin(top_25_aav)].copy()
+
+# === Groupe 2 : tes 50 AAV (taux moyen + élevé) ===
+aav_taux_moyen = [
+    "242", "68", "625", "26", "676", "287", "54", "90", "653", "183", "680",
+    "4", "1", "71", "586", "317", "630", "644", "128", "15", "216", "38", "374",
+    "77", "184", "144", "283", "9D1", "39", "660", "634", "581", "48", "59",
+    "9C3", "168", "303", "322", "36", "112", "508", "622", "221", "560", "269",
+    "42", "496", "409", "256", "512", "9D3"
+]
+df_50 = population_metier_df[population_metier_df["AAV2020"].isin(aav_taux_moyen)].copy()
+
+# === Fonction de préparation ===
+def prepare_df(df):
+    df["Indice_Homogeneite"] = df.apply(indice_homogeneite, axis=1)
+    df = df.merge(logements_sociaux_taux_df[["AAV2020", "PCT_SOCIAUX"]], on="AAV2020", how="left")
+    return df.dropna(subset=["Indice_Homogeneite", "PCT_SOCIAUX"])
+
+df_top25 = prepare_df(df_top25)
+df_50 = prepare_df(df_50)
+
+# === Graphique 1 : Top 25 ===
+plt.figure(figsize=(10, 6))
+plt.scatter(df_top25["PCT_SOCIAUX"] * 100, df_top25["Indice_Homogeneite"],
+            alpha=0.7, edgecolors='k', color='blue', label='Top 25 taux les plus élevés')
+
+if len(df_top25) > 1:
+    x = df_top25["PCT_SOCIAUX"] * 100
+    y = df_top25["Indice_Homogeneite"]
+    m, b = np.polyfit(x, y, 1)
+    plt.plot(x, m * x + b, color='darkblue', linestyle='--', label=f'Tendance (r = {np.corrcoef(x, y)[0,1]:.2f})')
+
+plt.title("Homogénéité sociale - Top 25 taux de logements sociaux")
+plt.xlabel("Taux de logements sociaux (%)")
+plt.ylabel("Indice d'homogénéité sociale (%)")
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+file_25 = os.path.join(output_path, "graphique_top25_taux_sociaux.png")
+plt.savefig(file_25)
+print(f"✅ Graphique 1 sauvegardé : {file_25}")
+plt.show()
+
+# === Graphique 2 : Top 50 personnalisés ===
+plt.figure(figsize=(10, 6))
+plt.scatter(df_50["PCT_SOCIAUX"] * 100, df_50["Indice_Homogeneite"],
+            alpha=0.7, edgecolors='k', color='darkgreen', label='50 AAV taux élevé/moyen')
+
+if len(df_50) > 1:
+    x = df_50["PCT_SOCIAUX"] * 100
+    y = df_50["Indice_Homogeneite"]
+    m, b = np.polyfit(x, y, 1)
+    plt.plot(x, m * x + b, color='green', linestyle='--', label=f'Tendance (r = {np.corrcoef(x, y)[0,1]:.2f})')
+
+plt.title("Homogénéité sociale - 50 AAV taux élevé ou moyen")
+plt.xlabel("Taux de logements sociaux (%)")
+plt.ylabel("Indice d'homogénéité sociale (%)")
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+file_50 = os.path.join(output_path, "graphique_top50_taux_sociaux.png")
+plt.savefig(file_50)
+print(f"✅ Graphique 2 sauvegardé : {file_50}")
+plt.show()
+
+
+# Assure que les colonnes AAV2020 sont en chaînes de caractères
+population_metier_df["AAV2020"] = population_metier_df["AAV2020"].astype(str)
+logements_sociaux_taux_df["AAV2020"] = logements_sociaux_taux_df["AAV2020"].astype(str)
+
+# === Top 100 AAV ===
+top_100_aav = [
+    "9D3", "512", "256", "409", "496", "42", "269", "560", "221", "622",
+    "508", "112", "36", "322", "303", "168", "9C3", "59", "48", "581", 
+    "634", "660", "39", "9D1", "283", "144", "142", "284", "38", "149", 
+    "75", "370", "104", "199", "50", "143", "61", "160", "179", "220", 
+    "142", "250", "312", "444", "677", "67", "17", "178", "360", "300", 
+    "115", "125", "161", "300", "242", "54", "68", "152", "201", "389", 
+    "456", "508", "213", "360", "487", "313", "343", "317", "176", "290", 
+    "76", "204", "136", "275", "442", "407", "166", "249", "295", "341", 
+    "470", "322", "241", "48", "482", "144", "170", "103", "223", "368", 
+    "224", "298", "101", "255", "265", "474", "317", "395", "72", "252", 
+    "306", "59", "21", "48", "532", "233", "234", "84", "290", "295", 
+    "274", "312", "285", "181", "69", "35", "451", "238", "272"
+]
+
+# Filtrage des 100 premiers AAV
+df_top_100 = population_metier_df[population_metier_df["AAV2020"].isin(top_100_aav)].copy()
+
+# === Fonction de préparation ===
+def prepare_df(df):
+    df["Indice_Homogeneite"] = df.apply(indice_homogeneite, axis=1)
+    df = df.merge(logements_sociaux_taux_df[["AAV2020", "PCT_SOCIAUX"]], on="AAV2020", how="left")
+    return df.dropna(subset=["Indice_Homogeneite", "PCT_SOCIAUX"])
+
+# Préparation du DataFrame Top 100
+df_top_100 = prepare_df(df_top_100)
+
+# === Graphique : Top 100 ===
+plt.figure(figsize=(10, 6))
+plt.scatter(df_top_100["PCT_SOCIAUX"] * 100, df_top_100["Indice_Homogeneite"],
+            alpha=0.7, edgecolors='k', color='blue', label='Top 100 AAV')
+
+if len(df_top_100) > 1:
+    x = df_top_100["PCT_SOCIAUX"] * 100
+    y = df_top_100["Indice_Homogeneite"]
+    m, b = np.polyfit(x, y, 1)
+    plt.plot(x, m * x + b, color='darkblue', linestyle='--', label=f'Tendance (r = {np.corrcoef(x, y)[0,1]:.2f})')
+
+plt.title("Homogénéité sociale pour les 100 AAV avec les taux les plus élevés de logements sociaux")
+plt.xlabel("Taux de logements sociaux (%)")
+plt.ylabel("Indice d'homogénéité sociale (%)")
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+
+# Sauvegarde
+file_name = os.path.join(output_path, "graphique_top_100_logements_sociaux.png")
+plt.savefig(file_name)
+print(f"✅ Graphique 3 sauvegardé : {file_name}")
+plt.show()
