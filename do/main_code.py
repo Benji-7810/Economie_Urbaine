@@ -100,3 +100,51 @@ print(f"✅ Figure enregistrée dans {output_image_path}")
 
 # Afficher la figure
 plt.show()
+
+# === GRAPHIQUES CSP : par catégorie sociale ===
+print("📊 Génération des graphiques par CSP...")
+
+# Titres explicites pour chaque catégorie
+titres = {
+    "CS2": "Artisans, commerçants, chefs d'entreprise (15-64 ans)",
+    "CS3": "Cadres, professions intellectuelles supérieures (15-64 ans)",
+    "CS5": "Employés (15-64 ans)",
+    "CS6": "Ouvriers (15-64 ans)"
+}
+
+# Moyennes CSP par AAV
+csp_moyennes = population_metier_df.groupby("AAV2020")[cols].mean().reset_index()
+csp_moyennes["AAV2020"] = csp_moyennes["AAV2020"].astype(str).str.zfill(3)
+
+# Fusion avec le taux de logements sociaux
+df_corr = pd.merge(csp_moyennes, logements_sociaux_taux_df[["AAV2020", "PCT_SOCIAUX"]], on="AAV2020", how="left")
+df_corr["PCT_SOCIAUX"] = df_corr["PCT_SOCIAUX"] * 100
+
+# Boucle sur chaque CSP
+for col in cols:
+    # Filtrage des extrêmes pour améliorer la lisibilité
+    max_val = df_corr[col].quantile(0.99)
+    df_filt = df_corr[df_corr[col] < max_val]
+
+    plt.figure(figsize=(10, 6))
+    plt.scatter(df_filt["PCT_SOCIAUX"], df_filt[col], alpha=0.7, edgecolors='k')
+
+    # Droite de tendance
+    m, b = np.polyfit(df_filt["PCT_SOCIAUX"], df_filt[col], 1)
+    r = np.corrcoef(df_filt["PCT_SOCIAUX"], df_filt[col])[0, 1]
+    plt.plot(df_filt["PCT_SOCIAUX"], m * df_filt["PCT_SOCIAUX"] + b, color='red', label=f'Tendance (r = {r:.2f})')
+
+    # Titres et axes
+    plt.title(f"{titres[col]} selon le taux de logements sociaux")
+    plt.xlabel("Taux de logements sociaux (%)")
+    plt.ylabel(titres[col])
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+
+    # Sauvegarde
+    filename = f"{col}_vs_logements_sociaux.png"
+    full_path = os.path.join(output_path, filename)
+    plt.savefig(full_path)
+    print(f"✅ Graphique sauvegardé : {full_path}")
+    plt.show()
