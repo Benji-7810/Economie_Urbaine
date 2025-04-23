@@ -1,101 +1,71 @@
 #!/usr/bin/env python3
 """
-Script Python pour calculer le pourcentage entre deux fichiers CSV sur la clé 'GEO'.
-Usage:
-    ./calc_pct.py fichier_totaux.csv fichier_sociaux.csv [-o output.csv]
-
-- fichier_totaux.csv : CSV avec en-tête incluant 'GEO' et 'OBS_VALUE'.
-- fichier_sociaux.csv : CSV avec en-tête incluant 'GEO' et 'OBS_VALUE'.
-- output.csv : fichier de sortie, contiendra toutes les colonnes du second fichier plus une colonne 'PCT'.
-  Si la valeur totale est manquante ou nulle, 'PCT' vaudra '?'.
+Script Python pour calculer le pourcentage de logements sociaux par rapport aux logements totaux, par 'GEO'.
+Usage :
+    ./calc_pct.py logements_total_unique_COM.csv logement_sociaux.csv -o resultats.csv
 """
+
 import csv
 import argparse
 
-
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Calcule le pourcentage OBS_SOCIAUX / OBS_TOTAUX * 100 pour chaque GEO"
+        description="Calcule le pourcentage de logements sociaux par rapport au total pour chaque GEO"
     )
-    parser.add_argument(
-        'file_totals',
-        help="Chemin vers le fichier CSV des totaux (avec 'GEO' et 'OBS_VALUE')"
-    )
-    parser.add_argument(
-        'file_sociaux',
-        help="Chemin vers le fichier CSV des logements sociaux (avec 'GEO' et 'OBS_VALUE')"
-    )
-    parser.add_argument(
-        '-o', '--output',
-        default='output.csv',
-        help="Chemin du fichier de sortie (par défaut 'output.csv')"
-    )
+    parser.add_argument('file_totals', help="Fichier CSV des logements totaux")
+    parser.add_argument('file_sociaux', help="Fichier CSV des logements sociaux")
+    parser.add_argument('-o', '--output', default='resultats.csv', help="Fichier CSV de sortie")
     return parser.parse_args()
 
-
-def read_totals(path):
+def read_values(path):
     """
-    Lit le fichier des totaux et renvoie un dict { GEO: valeur_totale }
+    Lit un fichier CSV et retourne un dictionnaire { GEO: OBS_VALUE }.
+    Ignore les lignes où OBS_VALUE est vide ou invalide.
     """
-    totals = {}
+    values = {}
     with open(path, newline='', encoding='utf-8') as f:
-        reader = csv.reader(f, delimiter=';')
-        header = next(reader)
-        try:
-            idx_geo = header.index('GEO')
-            idx_obs = header.index('OBS_VALUE')
-        except ValueError as e:
-            raise ValueError(f"En-tête invalide dans {path}, colonne manquante: {e}")
-
+        reader = csv.DictReader(f, delimiter=';')
         for row in reader:
-            geo = row[idx_geo]
-            val = row[idx_obs].strip()
+            geo = row.get('GEO')
             try:
-                totals[geo] = float(val)
+                obs_value = float(row.get('OBS_VALUE', '').strip())
             except ValueError:
-                totals[geo] = None
-    return totals
+                obs_value = None
+            if geo and obs_value is not None:
+                values[geo] = obs_value
+    return values
 
-
-def process_files(totals, input_path, output_path):
+def compute_percentages(totals, sociaux):
     """
-    Lit le fichier sociaux, calcule le pourcentage et écrit le résultat.
+    Calcule les pourcentages de logements sociaux / logements totaux * 100
     """
-    with open(input_path, newline='', encoding='utf-8') as fin, \
-         open(output_path, 'w', newline='', encoding='utf-8') as fout:
-        reader = csv.reader(fin, delimiter=';')
-        writer = csv.writer(fout, delimiter=';')
+    results = []
+    for geo, sociaux_val in sociaux.items():
+        total_val = totals.get(geo)
+        if total_val and total_val != 0:
+            pct = round((sociaux_val / total_val) * 100, 2)
+        else:
+            pct = '?'
+        results.append({'GEO': geo, 'LOG_SOCIAUX': sociaux_val, 'LOG_TOTAL': total_val, 'PCT_SOCIAUX': pct})
+    return results
 
-        header = next(reader)
-        writer.writerow(header + ['PCT'])
-
-        # indices
-        idx_geo = header.index('GEO')
-        idx_obs = header.index('OBS_VALUE')
-
-        for row in reader:
-            geo = row[idx_geo]
-            obs_val = row[idx_obs].strip()
-            try:
-                obs = float(obs_val)
-            except ValueError:
-                obs = None
-
-            total = totals.get(geo)
-            if total is None or total == 0 or obs is None:
-                pct = '?'
-            else:
-                pct = f"{obs/total*100:.2f}"
-
-            writer.writerow(row + [pct])
-
+def write_output(results, output_path):
+    """
+    Écrit les résultats dans un fichier CSV.
+    """
+    with open(output_path, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=['GEO', 'LOG_SOCIAUX', 'LOG_TOTAL', 'PCT_SOCIAUX'], delimiter=';')
+        writer.writeheader()
+        for row in results:
+            writer.writerow(row)
 
 def main():
     args = parse_args()
-    totals = read_totals(args.file_totals)
-    process_files(totals, args.file_sociaux, args.output)
-    print(f"Fichier de sortie généré : {args.output}")
-
+    totals = read_values(args.file_totals)
+    sociaux = read_values(args.file_sociaux)
+    results = compute_percentages(totals, sociaux)
+    write_output(results, args.output)
+    print(f"Fichier de résultats généré : {args.output}")
 
 if __name__ == '__main__':
     main()
