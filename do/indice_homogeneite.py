@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Chargement des données
-df = pd.read_csv("population_metier.csv", delimiter=';')
+df = pd.read_csv("..\inputs\population_metier.csv", delimiter=';')
 
 # Renommer les colonnes CSP
 df = df.rename(columns={
