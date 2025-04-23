@@ -1,12 +1,11 @@
 ﻿AAV2020;LIBAAV2020;TAAV2017;TDAAV2017;NB_COM
-00;Commune hors attraction des villes;0;00;8897
-01;Paris;5;50;1926
-02;Lyon;4;42;397
-03;Marseille - Aix-en-Provence;4;42;115
-04;Lille (partie française);4;42;201
-05;Toulouse;4;42;527
-06;Bordeaux;4;42;275
-08;Nantes;4;41;116
+1;Paris;5;50;1926
+2;Lyon;4;42;397
+3;Marseille - Aix-en-Provence;4;42;115
+4;Lille (partie française);4;42;201
+5;Toulouse;4;42;527
+6;Bordeaux;4;42;275
+8;Nantes;4;41;116
 10;Strasbourg (partie française);4;41;268
 12;Montpellier;4;41;161
 13;Rennes;4;41;183
@@ -699,4 +698,4 @@ LAU;Lausanne (partie française);3;33;3
 LUX;Luxembourg (partie française);4;41;115
 MON;Monaco - Menton (partie française);2;23;12
 SAR;Sarrebruck (partie française);4;41;12
-;;;;
+
