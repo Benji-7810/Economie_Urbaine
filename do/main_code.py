@@ -139,30 +139,41 @@ csp_moyennes["AAV2020"] = csp_moyennes["AAV2020"].astype(str).str.zfill(3)
 
 # Fusion avec le taux de logements sociaux
 df_csp = csp_moyennes.merge(logements_sociaux_taux_df[["AAV2020", "PCT_SOCIAUX"]], on="AAV2020", how="left")
-df_csp["PCT_SOCIAUX"] = df_csp["PCT_SOCIAUX"] * 100
-
-# Titres explicites pour chaque CSP
-titres_csp = {
+df_csp["PCT_SOCIAUX"] = df_csp["PCT_SOCIAUX"] * 100# Titres explicites pour chaque catégorie
+titres = {
     "CS2": "Artisans, commerçants, chefs d'entreprise",
     "CS3": "Cadres et professions intellectuelles supérieures",
     "CS5": "Employés",
     "CS6": "Ouvriers"
 }
 
+# Générer un graphique pour chaque colonne CSP avec filtrage des extrêmes
 for col in cols:
-    df_plot = df_csp.dropna(subset=["PCT_SOCIAUX", col])
+    df_temp = population_metier_df.copy()
+    df_temp = df_temp.merge(logements_sociaux_taux_df[["AAV2020", "PCT_SOCIAUX"]], on="AAV2020", how="left")
+    df_temp = df_temp.dropna(subset=[col, "PCT_SOCIAUX"])
+
+    # Filtrage des extrêmes (1er au 99e percentile)
+    y_max = df_temp[col].quantile(0.99)
+    x_max = df_temp["PCT_SOCIAUX"].quantile(0.99)
+    df_filt = df_temp[(df_temp[col] < y_max) & (df_temp["PCT_SOCIAUX"] < x_max)]
+
+    x = df_filt["PCT_SOCIAUX"] * 100
+    y = df_filt[col]
+
     plt.figure(figsize=(10, 6))
-    plt.scatter(df_plot["PCT_SOCIAUX"], df_plot[col], alpha=0.7, edgecolors='k', label=titres_csp[col])
+    plt.scatter(x, y, alpha=0.7, edgecolors='k', label=titres[col])
 
-    if len(df_plot) > 1:
-        m, b = np.polyfit(df_plot["PCT_SOCIAUX"], df_plot[col], 1)
-        r = np.corrcoef(df_plot["PCT_SOCIAUX"], df_plot[col])[0, 1]
-        plt.plot(df_plot["PCT_SOCIAUX"], m * df_plot["PCT_SOCIAUX"] + b, color='red',
-                 label=f'Tendance (r = {r:.2f})')
+    if len(x) > 1:
+        m, b = np.polyfit(x, y, 1)
+        r = np.corrcoef(x, y)[0, 1]
+        plt.plot(x, m * x + b, color='red', label=f'Tendance (r = {r:.2f})')
+    else:
+        print(f"⚠️ Pas assez de données pour tracer une tendance pour {col}")
 
-    plt.title(f"{titres_csp[col]} selon le taux de logements sociaux")
+    plt.title(f"{titres[col]} selon le taux de logements sociaux")
     plt.xlabel("Taux de logements sociaux (%)")
-    plt.ylabel(titres_csp[col])
+    plt.ylabel(titres[col])
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
@@ -170,5 +181,5 @@ for col in cols:
     filename = f"{col}_vs_logements_sociaux.png"
     full_path = os.path.join(output_path, filename)
     plt.savefig(full_path)
-    print(f"✅ Graphique sauvegardé : {full_path}")
+    print(f"✅ Graphique filtré sauvegardé : {full_path}")
     plt.show()
