@@ -35,7 +35,7 @@ def calculer_indice_homogeneite_entropie(fichier_entree, fichier_sortie, fichier
 
     # Sauvegarde du fichier trié
     df_final_sorted.to_csv(fichier_sortie, sep=';', index=False)
-    print(f"✅ Fichier final trié (colonnes 1, 6, 7) sauvegardé : {fichier_sortie}")
+    print(f"✅ Fichier final trié ")
 
 # 🔁 Exécution directe
 if __name__ == "__main__":

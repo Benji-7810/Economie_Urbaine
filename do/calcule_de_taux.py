@@ -1,21 +1,9 @@
 #!/usr/bin/env python3
 """
 Script Python pour calculer le pourcentage de logements sociaux par rapport aux logements totaux, par 'GEO'.
-Usage :
-    ./calc_pct.py logements_total_unique_COM.csv logement_sociaux.csv -o resultats.csv
 """
 
 import csv
-import argparse
-
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Calcule le pourcentage de logements sociaux par rapport au total pour chaque GEO"
-    )
-    parser.add_argument('file_totals', help="Fichier CSV des logements totaux")
-    parser.add_argument('file_sociaux', help="Fichier CSV des logements sociaux")
-    parser.add_argument('-o', '--output', default='resultats.csv', help="Fichier CSV de sortie")
-    return parser.parse_args()
 
 def read_values(path):
     """
@@ -38,6 +26,7 @@ def read_values(path):
 def compute_percentages(totals, sociaux):
     """
     Calcule les pourcentages de logements sociaux / logements totaux * 100
+    et les trie par PCT_SOCIAUX de manière décroissante.
     """
     results = []
     for geo, sociaux_val in sociaux.items():
@@ -47,25 +36,44 @@ def compute_percentages(totals, sociaux):
         else:
             pct = '?'
         results.append({'GEO': geo, 'LOG_SOCIAUX': sociaux_val, 'LOG_TOTAL': total_val, 'PCT_SOCIAUX': pct})
-    return results
+    
+    # Trier par PCT_SOCIAUX en ordre décroissant
+    results_sorted = sorted(results, key=lambda x: x['PCT_SOCIAUX'], reverse=True)
+    
+    return results_sorted
 
 def write_output(results, output_path):
     """
-    Écrit les résultats dans un fichier CSV.
+    Écrit les résultats dans un fichier CSV avec les entêtes modifiés.
     """
+    # Modifier les en-têtes
     with open(output_path, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=['GEO', 'LOG_SOCIAUX', 'LOG_TOTAL', 'PCT_SOCIAUX'], delimiter=';')
+        # Nouveau nom de colonne pour GEO (AAV2020)
+        fieldnames = ['AAV2020', 'LOG_SOCIAUX', 'LOG_TOTAL', 'PCT_SOCIAUX']
+        writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=';')
         writer.writeheader()
+        
+        # Écriture des résultats avec le champ 'AAV2020' à la place de 'GEO'
         for row in results:
+            row['AAV2020'] = row.pop('GEO')  # Renommer la clé 'GEO' en 'AAV2020'
             writer.writerow(row)
 
 def main():
-    args = parse_args()
-    totals = read_values(args.file_totals)
-    sociaux = read_values(args.file_sociaux)
+    # Fichiers prédéfinis
+    file_totals = "../inputs/Logement_Total.csv"
+    file_sociaux = "../inputs/Logement_sociaux.csv"
+    output_file = "../inputs/logements_sociaux_taux.csv"
+    
+    # Lecture des fichiers
+    totals = read_values(file_totals)
+    sociaux = read_values(file_sociaux)
+
+    # Calcul des pourcentages
     results = compute_percentages(totals, sociaux)
-    write_output(results, args.output)
-    print(f"Fichier de résultats généré : {args.output}")
+
+    # Écriture du fichier de sortie avec entêtes modifiés
+    write_output(results, output_file)
+    print(f"✅ Fichier de résultats généré : {output_file}")
 
 if __name__ == '__main__':
     main()
