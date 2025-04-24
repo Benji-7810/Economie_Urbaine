@@ -511,3 +511,51 @@ file_name = os.path.join(output_path, "graphique_top_700_logements_sociaux.png")
 plt.savefig(file_name)
 print(f"✅ Graphique 3 sauvegardé : {file_name}")
 plt.show()
+
+
+
+top_100_last = [
+    "618", "529", "550", "523", "621", "537", "606", "669", "361", "464", "495", "528", "639", "354",
+    "598", "578", "564", "681", "298", "386", "284", "384", "453", "526", "632", "414", "192", "661",
+    "538", "331", "502", "170", "231", "410", "131", "615", "355", "501", "271", "316", "302", "315",
+    "455", "314", "506", "675", "549", "579", "542", "546", "377", "166", "425", "540", "497", "434",
+    "599", "483", "492", "359", "657", "555", "245", "439", "340", "566", "266", "344", "371", "195",
+    "477", "485", "567", "467", "673", "405", "616", "605", "312", "594", "600", "525", "363", "469",
+    "471", "642", "527", "575", "233", "385", "255", "667", "382", "393", "431", "313", "180", "488"
+]
+
+# Filtrage des 100 premiers AAV
+top_100_last = population_metier_df[population_metier_df["AAV2020"].isin(top_100_last)].copy()
+
+# === Fonction de préparation ===
+def prepare_df(df):
+    df["Indice_Homogeneite"] = df.apply(indice_homogeneite, axis=1)
+    df = df.merge(logements_sociaux_taux_df[["AAV2020", "PCT_SOCIAUX"]], on="AAV2020", how="left")
+    return df.dropna(subset=["Indice_Homogeneite", "PCT_SOCIAUX"])
+
+# Préparation du DataFrame Top 100
+top_100_last = prepare_df(top_100_last)
+
+# === Graphique : Top 100 ===
+plt.figure(figsize=(10, 6))
+plt.scatter(top_100_last["PCT_SOCIAUX"] * 100, top_100_last["Indice_Homogeneite"],
+            alpha=0.7, edgecolors='k', color='blue', label='Top 100 AAV')
+
+if len(top_100_last) > 1:
+    x = top_100_last["PCT_SOCIAUX"] * 100
+    y = top_100_last["Indice_Homogeneite"]
+    m, b = np.polyfit(x, y, 1)
+    plt.plot(x, m * x + b, color='darkblue', linestyle='--', label=f'Tendance (r = {np.corrcoef(x, y)[0,1]:.2f})')
+
+plt.title("Homogénéité sociale pour les top_100_last avec les taux les plus élevés de logements sociaux")
+plt.xlabel("Taux de logements sociaux (%)")
+plt.ylabel("Indice d'homogénéité sociale (%)")
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+
+# Sauvegarde
+file_name = os.path.join(output_path, "graphique_top_100_last_logements_sociaux.png")
+plt.savefig(file_name)
+print(f"✅ Graphique 3 sauvegardé : {file_name}")
+plt.show()
