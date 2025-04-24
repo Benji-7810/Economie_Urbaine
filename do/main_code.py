@@ -72,12 +72,13 @@ def tracer_graphique(df, label, couleur, nom_fichier):
     plt.show()
 
 # Génération des top AAV
-top_25 = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=False).head(25)["AAV2020"].tolist()
-top_50 = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=False).head(50)["AAV2020"].tolist()
 top_100 = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=False).head(100)["AAV2020"].tolist()
+top_200 = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=False).head(200)["AAV2020"].tolist()
 top_300 = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=False).head(300)["AAV2020"].tolist()
 top_700 = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=False).head(700)["AAV2020"].tolist()
 last_100 = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=True).head(100)["AAV2020"].tolist()
+last_200 = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=True).head(200)["AAV2020"].tolist()
+last_300 = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=True).head(300)["AAV2020"].tolist()
 last_600 = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=True).head(600)["AAV2020"].tolist()
 
 # Fonction de préparation des données
@@ -88,12 +89,13 @@ def prepare_df(df_base, aav_list):
     return df.dropna(subset=["Indice_Homogeneite", "PCT_SOCIAUX"])
 
 # Tracés pour les top
-tracer_graphique(prepare_df(population_metier_df, top_25), "Top 25", "blue", "top25.png")
-tracer_graphique(prepare_df(population_metier_df, top_50), "Top 50", "green", "top50.png")
 tracer_graphique(prepare_df(population_metier_df, top_100), "Top 100", "purple", "top100.png")
+tracer_graphique(prepare_df(population_metier_df, top_200), "Top 200", "purple", "top200.png")
 tracer_graphique(prepare_df(population_metier_df, top_300), "Top 300", "orange", "top300.png")
 tracer_graphique(prepare_df(population_metier_df, top_700), "Top 700", "teal", "top700.png")
 tracer_graphique(prepare_df(population_metier_df, last_100), "Bas 100", "red", "last100.png")
+tracer_graphique(prepare_df(population_metier_df, last_200), "Bas 200", "red", "last200.png")
+tracer_graphique(prepare_df(population_metier_df, last_300), "Bas 300", "red", "last300.png")
 tracer_graphique(prepare_df(population_metier_df, last_600), "Bas 600", "red", "last600.png")
 
 # === GRAPHIQUES CSP (individuels + combinés avec filtrage) ===
@@ -137,3 +139,4 @@ def tracer_graphique_filtré(df_base, col, taux_df, titres, output_path):
 
 for col in ["CS2", "CS3", "CS5", "CS6", "CS2_CS3", "CS5_CS6"]:
     tracer_graphique_filtré(population_metier_df, col, logements_sociaux_taux_df, titres, output_path)
+
