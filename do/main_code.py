@@ -54,22 +54,6 @@ logements_sociaux_taux_df["AAV2020"] = logements_sociaux_taux_df["AAV2020"].asty
 df_result = moyennes.merge(logements_sociaux_taux_df[["AAV2020", "PCT_SOCIAUX"]], on="AAV2020", how="left")
 df_plot = df_result.dropna(subset=["Indice_Homogeneite", "PCT_SOCIAUX"])
 
-# Graphique
-x = df_plot["PCT_SOCIAUX"] * 100
-y = df_plot["Indice_Homogeneite"]
-plt.figure(figsize=(10, 6))
-plt.scatter(x, y, alpha=0.7, edgecolors='k', label="AAV")
-m, b = np.polyfit(x, y, 1)
-plt.plot(x, m * x + b, color="red", label=f"Tendance (r = {np.corrcoef(x, y)[0, 1]:.2f})")
-plt.title("Corrélation : taux de logements sociaux vs ségrégation sociale")
-plt.xlabel("Taux de logements sociaux (%)")
-plt.ylabel("Indice d'homogénéité sociale (%)")
-plt.grid(True)
-plt.legend()
-plt.tight_layout()
-plt.savefig(os.path.join(output_path, "correlation_logements_sociaux_segregation.png"))
-plt.show()
-
 
 # Fonction de préparation pour ajouter l’indice et fusionner avec le taux
 def prepare_df(df_base, aav_list, taux_df):
@@ -110,6 +94,7 @@ top_100_aav = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=
 top_300_aav = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=False).head(300)["AAV2020"].tolist()
 top_700_aav = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=False).head(700)["AAV2020"].tolist()
 top_100_last = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=True).head(100)["AAV2020"].tolist()
+top_600_last = logements_sociaux_taux_df.sort_values(by="PCT_SOCIAUX", ascending=True).head(600)["AAV2020"].tolist()
 
 # Tracés
 tracer_graphique(prepare_df(population_metier_df, top_25_aav, logements_sociaux_taux_df),
@@ -129,6 +114,9 @@ tracer_graphique(prepare_df(population_metier_df, top_700_aav, logements_sociaux
 
 tracer_graphique(prepare_df(population_metier_df, top_100_last, logements_sociaux_taux_df),
                  "Top 100 taux les plus faibles", "red", "graphique_top100_faible_taux_sociaux.png")
+
+tracer_graphique(prepare_df(population_metier_df, top_600_last, logements_sociaux_taux_df),
+                 "Top 600 taux les plus faibles", "red", "graphique_top_600_faible_taux_sociaux.png")
 
 # === GRAPHIQUES INDIVIDUELS PAR CSP ===
 print("📊 Génération des graphiques individuels par catégorie socio-professionnelle...")
