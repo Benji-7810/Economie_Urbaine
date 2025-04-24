@@ -1,0 +1,44 @@
+Voici ce que tu peux mettre dans **la partie introduction de ton diaporama** pour présenter la question :
+
+---
+
+## 🎯 Problématique
+
+**Les aires urbaines (AU) ayant un taux de logements sociaux plus élevé sont-elles plus ségrégées ?**
+
+---
+
+## 🎬 Introduction — Présentation du sujet
+
+La ségrégation urbaine est un phénomène où des groupes sociaux se trouvent spatialement séparés dans la ville, souvent selon des critères économiques, sociaux ou ethniques. Ce phénomène interroge sur la cohésion sociale et l’égalité d’accès aux ressources (écoles, emploi, services publics...).
+
+Le logement social, censé réduire les inégalités, pourrait aussi favoriser une forme de concentration des ménages modestes. Dès lors, on peut se demander si un **taux élevé de logements sociaux dans une aire urbaine accentue la ségrégation socio-spatiale**.
+
+---
+
+## 🧠 Cadre théorique — Résumé des apports des études précédentes
+
+Des **modèles économiques** ont été développés pour comprendre les mécanismes de la ségrégation :
+
+- 🔁 **Le modèle monocentrique** explique le tri spatial des ménages selon leurs préférences, leurs revenus et leur coût de transport. Les groupes avec des contraintes similaires se rassemblent dans certains espaces urbains, ce qui mène naturellement à une ségrégation spatiale.
+  
+- 🗳️ **Le modèle de Tiebout** introduit le concept de « vote avec les pieds » : les ménages choisissent leur lieu de résidence en fonction des biens publics disponibles (écoles, sécurité...). Cela renforce les différences entre quartiers et peut conduire à une ségrégation plus marquée.
+
+---
+
+## 📊 Ce que montrent les études empiriques
+
+- En France, **la ségrégation est plus marquée chez les populations aisées que pauvres**, mais les deux vivent dans des espaces très différenciés.
+- **Goux et Maurin (2007)** montrent que la réussite scolaire dépend fortement du voisinage, particulièrement dans les quartiers de logements sociaux.
+- **Chetty, Hendren et Katz (2015)**, via l’expérience *Moving to Opportunity* (États-Unis), démontrent que changer de quartier peut avoir un effet **positif sur la trajectoire des enfants**, notamment leur réussite universitaire et leurs revenus futurs.
+- D’autres études, comme **Fack et Grenet (2010)**, révèlent que la proximité d’écoles de qualité fait grimper les prix de l’immobilier, contribuant à l’exclusion de certains ménages.
+
+---
+
+## 🎯 Objectif de notre étude
+
+L’objectif de ce travail est de **mesurer la relation entre le taux de logements sociaux et la ségrégation** dans les aires urbaines françaises. Pour ce faire, nous mobilisons des données INSEE sur les catégories socioprofessionnelles, les taux de logements sociaux et des indices d’homogénéité.
+
+---
+
+Souhaites-tu que je t’aide aussi à formuler **le plan détaillé de ta présentation** (parties, transitions, conclusion) ?
