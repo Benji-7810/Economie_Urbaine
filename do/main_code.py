@@ -140,3 +140,41 @@ def tracer_graphique_filtré(df_base, col, taux_df, titres, output_path):
 for col in ["CS2", "CS3", "CS5", "CS6", "CS2_CS3", "CS5_CS6"]:
     tracer_graphique_filtré(population_metier_df, col, logements_sociaux_taux_df, titres, output_path)
 
+# === TABLEAU DE RÉGRESSION ===
+import statsmodels.api as sm
+
+# Agrégation des moyennes CSP et homogénéité par AAV
+grouped = population_metier_df.groupby("AAV2020").agg({
+    "CS2": "mean",
+    "CS3": "mean",
+    "CS5": "mean",
+    "CS6": "mean",
+    "Indice_Homogeneite": "mean"
+}).reset_index()
+
+# Fusion avec taux de logements sociaux
+merged_df = pd.merge(grouped, logements_sociaux_taux_df[["AAV2020", "PCT_SOCIAUX"]], on="AAV2020", how="left")
+merged_df = merged_df.dropna()
+
+# Fonction pour générer une régression et ses résultats
+def faire_regression(df, y_col):
+    X = sm.add_constant(df["PCT_SOCIAUX"])
+    y = df[y_col]
+    model = sm.OLS(y, X).fit()
+    return {
+        "Variable dépendante": y_col,
+        "Coef.": round(model.params["PCT_SOCIAUX"], 4),
+        "P-value": round(model.pvalues["PCT_SOCIAUX"], 4),
+        "Constante": round(model.params["const"], 4),
+        "R²": round(model.rsquared, 3)
+    }
+
+# Appliquer à chaque variable cible
+variables = ["Indice_Homogeneite", "CS2", "CS3", "CS5", "CS6"]
+resultats = [faire_regression(merged_df, var) for var in variables]
+
+# Afficher le tableau de régressions
+df_resultats = pd.DataFrame(resultats)
+print("\n=== Résumé des régressions ===")
+print(df_resultats.to_string(index=False))
+
