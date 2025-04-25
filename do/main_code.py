@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score
 
 print("hello")
 
@@ -52,16 +53,17 @@ logements_sociaux_taux_df["AAV2020"] = logements_sociaux_taux_df["AAV2020"].asty
 df_result = moyennes.merge(logements_sociaux_taux_df[["AAV2020", "PCT_SOCIAUX"]], on="AAV2020", how="left")
 df_plot = df_result.dropna(subset=["Indice_Homogeneite", "PCT_SOCIAUX"])
 
-# Fonction générique pour afficher et sauvegarder un graphique
+# Fonction générique pour afficher et sauvegarder un graphique avec R²
 def tracer_graphique(df, label, couleur, nom_fichier):
-    x = df["PCT_SOCIAUX"] * 100
+    x = df["PCT_SOCIAUX"]
     y = df["Indice_Homogeneite"]
     plt.figure(figsize=(10, 6))
     plt.scatter(x, y, alpha=0.7, edgecolors='k', color=couleur, label=label)
     if len(df) > 1:
         m, b = np.polyfit(x, y, 1)
-        r = np.corrcoef(x, y)[0, 1]
-        plt.plot(x, m * x + b, color='darkblue', linestyle='--', label=f'Tendance (r = {r:.2f})')
+        y_pred = m * x + b
+        r2 = r2_score(y, y_pred)
+        plt.plot(x, y_pred, color='darkblue', linestyle='--', label=f'Tendance (R² = {r2:.2f})')
     plt.title(f"Homogénéité sociale - {label}")
     plt.xlabel("Taux de logements sociaux (%)")
     plt.ylabel("Indice d'homogénéité sociale (%)")
@@ -118,14 +120,15 @@ def tracer_graphique_filtré(df_base, col, taux_df, titres, output_path):
     y_max = df[col].quantile(0.99)
     x_max = df["PCT_SOCIAUX"].quantile(0.99)
     df_filt = df[(df[col] < y_max) & (df["PCT_SOCIAUX"] < x_max)]
-    x = df_filt["PCT_SOCIAUX"] * 100
+    x = df_filt["PCT_SOCIAUX"]
     y = df_filt[col]
     plt.figure(figsize=(10, 6))
     plt.scatter(x, y, alpha=0.7, edgecolors='k', label=titres[col])
     if len(x) > 1:
         m, b = np.polyfit(x, y, 1)
-        r = np.corrcoef(x, y)[0, 1]
-        plt.plot(x, m * x + b, color='red', label=f'Tendance (r = {r:.2f})')
+        y_pred = m * x + b
+        r2 = r2_score(y, y_pred)
+        plt.plot(x, y_pred, color='red', label=f'Tendance (R² = {r2:.2f})')
     plt.title(f"{titres[col]} selon le taux de logements sociaux")
     plt.xlabel("Taux de logements sociaux (%)")
     plt.ylabel(titres[col])
@@ -139,4 +142,3 @@ def tracer_graphique_filtré(df_base, col, taux_df, titres, output_path):
 
 for col in ["CS2", "CS3", "CS5", "CS6", "CS2_CS3", "CS5_CS6"]:
     tracer_graphique_filtré(population_metier_df, col, logements_sociaux_taux_df, titres, output_path)
-
