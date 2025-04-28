@@ -114,8 +114,3 @@ Les résultats seront automatiquement enregistrés dans le dossier `outputs/`.
 
 ---
 
-## ✍️ Auteur
-
-Projet réalisé par **Mohamed Ouhab** dans le cadre d'une étude universitaire en économie urbaine.
-
----
