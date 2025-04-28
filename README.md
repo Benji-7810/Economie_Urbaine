@@ -43,3 +43,79 @@ Les données utilisées proviennent de bases publiques (INSEE) concernant :
 
 ## 📂 Structure du projet
 
+Le projet est organisé comme suit :
+
+```
+Economie_Urbaine/
+│
+├── do/                # Scripts Python pour le traitement des données
+│   ├── calcule_de_taux.py
+│   ├── calcule_homogeneite.py
+│   └── main_code.py
+│
+├── inputs/            # Données sources au format CSV
+│   ├── aire_urbaine.csv
+│   ├── Logement_Total.csv
+│   ├── Logement_sociaux.csv
+│   ├── logements_sociaux_taux.csv
+│   ├── indice_homogeneite_et_taux_social_par_AAV.csv
+│   └── population_metier.csv
+│
+├── outputs/           # Graphiques générés par les scripts
+│   ├── correlation_logements_sociaux_segregation.png
+│   ├── CS2_vs_logements_sociaux.png
+│   ├── CS3_vs_logements_sociaux.png
+│   ├── ... (autres graphiques)
+│
+├── Presentation.pdf   # Présentation visuelle du projet
+├── texte_eco.docx     # Analyse économique rédigée
+└── README.md          # Ce fichier
+```
+
+---
+
+## ⚙️ Installation
+
+Pour exécuter ce projet en local :
+
+1. Cloner le dépôt GitHub :
+
+```bash
+git clone https://github.com/toncompte/Economie_Urbaine.git
+cd Economie_Urbaine
+```
+
+2. Installer les dépendances nécessaires :
+
+```bash
+pip install pandas matplotlib
+```
+
+---
+
+## 🚀 Utilisation
+
+Pour lancer les analyses et générer les graphiques :
+
+```bash
+python do/main_code.py
+```
+
+Les résultats seront automatiquement enregistrés dans le dossier `outputs/`.
+
+---
+
+## 🛠️ Technologies utilisées
+
+- **Python 3.10**
+- **Pandas** — Analyse et manipulation de données
+- **Matplotlib** — Visualisation de données
+- **Données INSEE** — Sources statistiques officielles
+
+---
+
+## ✍️ Auteur
+
+Projet réalisé par **Mohamed Ouhab** dans le cadre d'une étude universitaire en économie urbaine.
+
+---
